@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
 
 const PublicLayout = () => {
   const location = useLocation();
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
 
   const navItems = [
     { name: 'Inicio', path: '/' },
@@ -48,9 +48,9 @@ const PublicLayout = () => {
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-lg text-muted-foreground hover:bg-secondary/50"
-                title={isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
               >
-                {isDarkMode ? (
+                {isDark ? (
                   <SunIcon className="h-5 w-5" />
                 ) : (
                   <MoonIcon className="h-5 w-5" />

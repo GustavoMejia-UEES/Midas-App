@@ -1,97 +1,128 @@
-import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
-import { Home, BookOpen, GraduationCap, BarChart2, Settings, Sun, Moon, LogOut } from 'lucide-react';
+import { 
+    ArrowLeftOnRectangleIcon, 
+    HomeIcon,
+    UserIcon,
+    Cog6ToothIcon,
+    UsersIcon,
+    BookOpenIcon,
+    CalendarIcon,
+    AcademicCapIcon,
+    ChatBubbleLeftRightIcon,
+    FolderIcon,
+    ChartBarIcon,
+    MoonIcon,
+    SunIcon
+} from '@heroicons/react/24/outline';
 
-const Sidebar = () => {
-  const { user, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
-  const location = useLocation();
-  const navigate = useNavigate();
+const Sidebar = ({ user, onLogout, navigationItems = [] }) => {
+    const { theme, toggleTheme } = useTheme();
+    const location = useLocation();
 
-  const menuItems = [
-    { name: 'Inicio', path: '/dashboard', icon: Home },
-    { name: 'Lecciones', path: '/dashboard/lessons', icon: BookOpen },
-    { name: 'Cursos', path: '/dashboard/courses', icon: GraduationCap },
-    { name: 'Progreso', path: '/dashboard/progress', icon: BarChart2 },
-    { name: 'Configuración', path: '/dashboard/settings', icon: Settings }
-  ];
+    const getRoleBadge = () => {
+        switch (user?.role) {
+            case 'admin':
+                return <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Admin</span>;
+            case 'teacher':
+                return <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Docente</span>;
+            case 'premium':
+                return <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Premium</span>;
+            case 'institutional':
+                return <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Institucional</span>;
+            default:
+                return <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Estudiante</span>;
+        }
+    };
 
-  const handleNavigation = (path) => {
-    navigate(path, { replace: true });
-  };
+    const getIconForPath = (path) => {
+        switch (path) {
+            case '/dashboard':
+                return <HomeIcon className="h-5 w-5" />;
+            case '/profile':
+                return <UserIcon className="h-5 w-5" />;
+            case '/settings':
+                return <Cog6ToothIcon className="h-5 w-5" />;
+            case '/admin/users':
+            case '/teacher/students':
+                return <UsersIcon className="h-5 w-5" />;
+            case '/admin/guides':
+            case '/teacher/courses':
+                return <BookOpenIcon className="h-5 w-5" />;
+            case '/admin/lessons':
+            case '/teacher/lessons':
+            case '/lessons':
+                return <AcademicCapIcon className="h-5 w-5" />;
+            case '/teacher/calendar':
+                return <CalendarIcon className="h-5 w-5" />;
+            case '/premium-lessons':
+                return <AcademicCapIcon className="h-5 w-5" />;
+            case '/chats':
+                return <ChatBubbleLeftRightIcon className="h-5 w-5" />;
+            case '/resources':
+                return <FolderIcon className="h-5 w-5" />;
+            case '/reports':
+                return <ChartBarIcon className="h-5 w-5" />;
+            default:
+                return <HomeIcon className="h-5 w-5" />;
+        }
+    };
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/login', { replace: true });
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-    }
-  };
+    return (
+        <div className="w-64 fixed h-full bg-white dark:bg-card shadow-lg border-r border-border">
+            <div className="p-4 border-b border-border">
+                <div className="flex items-center justify-between">
+                    <Link to="/dashboard" className="flex items-center">
+                        <span className="text-2xl font-bold text-primary">MIDAS</span>
+                    </Link>
+                    {getRoleBadge()}
+                </div>
+                <div className="mt-2 flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
+                    <button 
+                        onClick={toggleTheme}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:bg-secondary/50"
+                        title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                    >
+                        {theme === 'dark' ? (
+                            <SunIcon className="h-4 w-4" />
+                        ) : (
+                            <MoonIcon className="h-4 w-4" />
+                        )}
+                    </button>
+                </div>
+            </div>
 
-  return (
-    <div className="fixed left-0 top-0 h-screen w-64 bg-card border-r border-border">
-      <div className="flex flex-col h-full">
-        <div className="p-6">
-          <h2 className="text-xl font-semibold">Midas</h2>
-          <p className="text-sm text-muted-foreground">Bienvenido, {user?.name}</p>
+            <nav className="flex-1 p-4 space-y-1">
+                {navigationItems.map((item) => (
+                    <Link
+                        key={item.path}
+                        to={item.path}
+                        className={`flex items-center px-4 py-3 rounded-lg transition-colors ${
+                            location.pathname === item.path
+                                ? 'bg-primary text-primary-foreground'
+                                : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
+                        }`}
+                    >
+                        <span className="mr-3">
+                            {getIconForPath(item.path)}
+                        </span>
+                        {item.name}
+                    </Link>
+                ))}
+            </nav>
+
+            <div className="p-4 border-t border-border">
+                <button
+                    onClick={onLogout}
+                    className="flex items-center w-full px-4 py-3 text-muted-foreground hover:bg-secondary/50 hover:text-foreground rounded-lg transition-colors"
+                >
+                    <ArrowLeftOnRectangleIcon className="h-5 w-5 mr-3" />
+                    Cerrar Sesión
+                </button>
+            </div>
         </div>
-
-        <nav className="flex-1 px-4">
-          <ul className="space-y-2">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
-              return (
-                <li key={item.name}>
-                  <button
-                    onClick={() => handleNavigation(item.path)}
-                    className={`w-full flex items-center px-4 py-2 rounded-md transition-colors ${
-                      isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-foreground hover:bg-secondary'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5 mr-3" />
-                    {item.name}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-
-        <div className="p-4 space-y-2 border-t border-border">
-          <button
-            onClick={toggleTheme}
-            className="flex items-center justify-center w-full px-4 py-2 rounded-md bg-secondary hover:bg-secondary/80 transition-colors"
-          >
-            {theme === 'dark' ? (
-              <>
-                <Sun className="w-5 h-5 mr-2" />
-                <span>Modo Claro</span>
-              </>
-            ) : (
-              <>
-                <Moon className="w-5 h-5 mr-2" />
-                <span>Modo Oscuro</span>
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={handleLogout}
-            className="flex items-center justify-center w-full px-4 py-2 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
-          >
-            <LogOut className="w-5 h-5 mr-2" />
-            <span>Cerrar Sesión</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Sidebar; 

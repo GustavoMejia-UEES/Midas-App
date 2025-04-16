@@ -2,40 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
-import { usePlanRedirect } from '../../hooks/usePlanRedirect';
+import { useAdmin } from '../../hooks/useAdmin';
 import { Loader2 } from 'lucide-react';
 
-const Login = () => {
+const LoginV2 = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [formError, setFormError] = useState('');
+    const [shouldRedirect, setShouldRedirect] = useState(false);
     const { login, loginLoading, error, currentUser } = useAuth();
+    const { isAdmin } = useAdmin();
     const { theme } = useTheme();
     const navigate = useNavigate();
-    const { loading: planLoading } = usePlanRedirect();
 
     useEffect(() => {
-        const checkAndRedirect = async () => {
-            if (currentUser) {
-                try {
-                    const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-                    if (userDoc.exists()) {
-                        const userData = userDoc.data();
-                        if (userData.role === 'admin') {
-                            navigate('/admin/dashboard', { replace: true });
-                        }
-                        // La redirección por plan se maneja en usePlanRedirect
-                    }
-                } catch (error) {
-                    console.error('Error al verificar el rol:', error);
-                }
+        if (shouldRedirect && currentUser) {
+            if (isAdmin) {
+                navigate('/admin/dashboard', { replace: true });
+            } else {
+                navigate('/dashboard', { replace: true });
             }
-        };
-
-        checkAndRedirect();
-    }, [currentUser, navigate]);
+        }
+    }, [shouldRedirect, currentUser, isAdmin, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -47,7 +35,9 @@ const Login = () => {
         }
 
         const result = await login(email, password);
-        if (!result.success) {
+        if (result.success) {
+            setShouldRedirect(true);
+        } else {
             setFormError(result.error);
         }
     };
@@ -130,4 +120,4 @@ const Login = () => {
     );
 };
 
-export default Login; 
+export default LoginV2; 

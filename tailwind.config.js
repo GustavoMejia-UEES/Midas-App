@@ -1,6 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-    content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+    content: [
+        "./index.html",
+        "./src/**/*.{js,ts,jsx,tsx}",
+        "!./src/layouts/**/*" // Excluir la carpeta layouts que ya no existe
+    ],
     darkMode: 'class',
     theme: {
         extend: {
